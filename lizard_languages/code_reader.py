@@ -96,19 +96,25 @@ class CodeReader(object):
         return compile_file_extension_re(*cls.ext).match(filename)
 
     @staticmethod
-    def generate_tokens(source_code, addition='', token_class=None):
+    def generate_tokens(source_code, addition='', token_class=None, extra_symbols = []):
         def create_token(match):
             return match.group(0)
         if not token_class:
             token_class = create_token
 
-        def _generate_tokens(source_code, addition):
+        def _generate_tokens(source_code, addition, extra_symbols):
             # DO NOT put any sub groups in the regex. Good for performance
             _until_end = r"(?:\\\n|[^\n])*"
-            combined_symbols = ["||", "&&", "===", "!==", "==", "!=", "<=",
+            combined_symbols = [">>=", "||", "&&", "===", "!==", "==", "!=", "<=",
                                 ">=", "->",
                                 "++", "--", '+=', '-=',
                                 '*=', '/=', '^=', '&=', '|=', "..."]
+
+            #ben
+            #combined_symbols = extra_symbols + combined_symbols
+
+            #print("combined symbols: " + str(combined_symbols))
+
             token_pattern = re.compile(
                 r"(?:" +
                 r"/\*.*?\*/" +
@@ -142,7 +148,7 @@ class CodeReader(object):
             if macro:
                 yield macro
 
-        return [t for t in _generate_tokens(source_code, addition)]
+        return [t for t in _generate_tokens(source_code, addition, extra_symbols)]
 
     def __call__(self, tokens, reader):
         self.context = reader.context

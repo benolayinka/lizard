@@ -23,6 +23,13 @@ class CLikeReader(CodeReader, CCppCommentsMixin):
     language_names = ['cpp', 'c']
     macro_pattern = re.compile(r"#\s*(\w+)\s*(.*)", re.M | re.S)
 
+    #ben
+    general_register_ops = ["++", "--", "+( )", "-( )", "!( )", "~( )", "=", "+", "-", "*", "/", "%", "+=", "-=", "*=", "/=", "%=", "&", "^", "|", "&=", "^=", "|=", "<<", "<<=", ">>", ">>="]
+
+    state_registers_ops = ["==",  "!=",  ">",  "<",  ">=",  "<=",  "&&",  "||"]
+
+    extra_symbols = general_register_ops + state_registers_ops
+
     def __init__(self, context):
         super(CLikeReader, self).__init__(context)
         self.parallel_states = (
