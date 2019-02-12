@@ -322,7 +322,6 @@ class FileInformation(object):  # pylint: disable=R0903
         self.nloc = nloc
         self.function_list = function_list or []
         self.token_count = 0
-        self.instr = 0
 
     average_nloc = property(lambda self: self.functions_average("nloc"))
     average_token_count = property(
@@ -399,7 +398,6 @@ class FileInfoBuilder(object):
         self.global_pseudo_function = FunctionInfo('*global*', filename, 0)
         self.current_function = self.global_pseudo_function
         self._nesting_stack = NestingStack()
-        self.instr = 0
 
     def __getattr__(self, attr):
         # delegating to _nesting_stack
@@ -445,10 +443,6 @@ class FileInfoBuilder(object):
     def add_condition(self, inc=1):
         self.current_function.cyclomatic_complexity += inc
 
-    #ben
-    def add_instr(self, inc=1):
-        self.instr += inc
-
     def reset_complexity(self):
         self.current_function.cyclomatic_complexity = 1
 
@@ -466,15 +460,6 @@ class FileInfoBuilder(object):
             self.fileinfo.function_list.append(self.current_function)
         self.forgive = False
         self.current_function = self.global_pseudo_function
-
-
-def instr_counter(tokens, reader):
-    context = reader.context
-    for token in tokens:
-        if token in reader.extra_symbols:
-            context.instr += 1
-            context.fileinfo.instr += 1
-            yield token
 
 def preprocessing(tokens, reader):
     if hasattr(reader, "preprocess"):
@@ -552,7 +537,7 @@ class FileAnalyzer(object):  # pylint: disable=R0903
     def analyze_source_code(self, filename, code):
         context = FileInfoBuilder(filename)
         reader = (get_reader_for(filename) or CLikeReader)(context)
-        tokens = reader.generate_tokens(code, extra_symbols=reader.extra_symbols)
+        tokens = reader.generate_tokens(code)
         context.fileinfo.tokens = tokens
 
         for processor in self.processors:
@@ -969,16 +954,13 @@ def get_extensions(extension_names):
 
     return expand_extensions([
             preprocessing,
-            instr_counter,
             comment_counter,
             line_counter,
             token_counter,
             condition_counter,
         ])
 
-
 analyze_file = FileAnalyzer(get_extensions([]))  # pylint: disable=C0103
-
 
 def main(argv=None):
     """Command-line entrance to Lizard.
@@ -986,6 +968,7 @@ def main(argv=None):
     Args:
         argv: Arguments vector; if None, sys.argv by default.
     """
+    print(sys.argv)
     options = parse_args(argv or sys.argv)
     printer = options.printer or print_result
     schema = OutputScheme(options.extensions)

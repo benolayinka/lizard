@@ -105,15 +105,14 @@ class CodeReader(object):
         def _generate_tokens(source_code, addition, extra_symbols):
             # DO NOT put any sub groups in the regex. Good for performance
             _until_end = r"(?:\\\n|[^\n])*"
-            combined_symbols = [">>=", "||", "&&", "===", "!==", "==", "!=", "<=",
+            combined_symbols = ["<<=", "<<", ">>=", ">>", "||",
+                                 "&&", "===", "!==", "==", "!=", "<=",
                                 ">=", "->",
                                 "++", "--", '+=', '-=',
-                                '*=', '/=', '^=', '&=', '|=', "..."]
+                                '*=', '/=', '^=', '&=', '|=', "...", "%="]
 
-            #ben
-            #combined_symbols = extra_symbols + combined_symbols
-
-            #print("combined symbols: " + str(combined_symbols))
+            #ben - added bitshift, %=, extra symbols parameter to pass additional
+            combined_symbols = extra_symbols + combined_symbols
 
             token_pattern = re.compile(
                 r"(?:" +
