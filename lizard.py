@@ -495,6 +495,7 @@ def line_counter(tokens, reader):
         else:
             context.current_line += 1
             newline = 1
+            #yield token #ben i need these newlines
 
 
 def token_counter(tokens, reader):
