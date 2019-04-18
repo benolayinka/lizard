@@ -969,7 +969,7 @@ def main(argv=None):
     Args:
         argv: Arguments vector; if None, sys.argv by default.
     """
-    print(sys.argv)
+    print(argv or sys.argv)
     options = parse_args(argv or sys.argv)
     printer = options.printer or print_result
     schema = OutputScheme(options.extensions)
