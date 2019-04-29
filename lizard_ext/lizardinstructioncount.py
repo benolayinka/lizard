@@ -9,7 +9,7 @@ from itertools import chain
 from lizard_languages.clike import CLikeReader
 from lizard import Nesting, BARE_NESTING
 
-debug = True
+debug = False
 
 def preprocess(self, tokens):
     #horrible inefficient hack to group derefs from whitespace
