@@ -144,9 +144,6 @@ class LizardExtension(ExtensionBase):  # pylint: disable=R0903
                         tokens[i:i+2] = [token+tokens[i+1]]
 
         self.context = reader.context
-        #TODO delete these
-        reader.context.fileinfo.instructions = []
-        reader.context.fileinfo.instruction_count = 0
         for token in tokens:
             current_function = self.context.current_function
             if not hasattr(current_function,
@@ -173,8 +170,10 @@ class LizardExtension(ExtensionBase):  # pylint: disable=R0903
 
         for instr in instrs:
             instr.line_num=self.context.current_line
+            instr.operator = token
 
-        self.current_condition.instructions = chain(self.current_condition.instructions, instrs)
+        self.current_condition.instructions.extend(instrs)
+        #self.current_condition.instructions = chain(self.current_condition.instructions, instrs)
         #self.context.fileinfo.instructions.extend(instrs)
         #self.context.current_function.instructions.extend(instrs)
         cost = len(instrs)
@@ -259,8 +258,25 @@ class LizardExtension(ExtensionBase):  # pylint: disable=R0903
 
     def print_result(self):
         for function in self.context.fileinfo.function_list:
-            function.instruction_count = self.get_children_instruction_count(function.conditional_info, True)
+            function.instruction_count, function.instructions = self.get_children_instruction_count(function.conditional_info, True)
             print('Total instructions: ' + str(function.instruction_count))
+            name = function.name + '_lizard_estimate.txt'
+            with open(name, 'w') as f:
+                f.write(function.name)
+                f.write(' total instruction_count: ')
+                f.write(str(function.instruction_count))
+                f.write('\n')
+                total_current=0
+                instrs=''
+                for instr in function.instructions:
+                    total_current+=instr.current
+                    instrs += (str(instr))
+                    instrs += '\n'
+                f.write('Avg current: ')
+                f.write(str(total_current/function.instruction_count))
+                f.write('\n')
+                f.write('Instr\tOp\tLine\n')
+                f.write(instrs)
 
         if debug:
             for instr in instructions:
@@ -268,19 +284,23 @@ class LizardExtension(ExtensionBase):  # pylint: disable=R0903
                 print(instr.counter)
 
     def get_children_instruction_count(self, conditional_root, user = False):
+        instructions = []
         instruction_count = 0
         exc = 1
         if user:
-            exc = int(input('# executions? ' + conditional_root.long_name))
+            exc = int(input('# executions: (' + conditional_root.long_name + ') ? '))
         instruction_count += exc * conditional_root.instruction_count
+        instructions.extend(exc * conditional_root.instructions)
         for cond in conditional_root.children:
-            instruction_count += self.get_children_instruction_count(cond, user)
-        return instruction_count
+            instruction_count_children, instructions_children = self.get_children_instruction_count(cond, user)
+            instruction_count += instruction_count_children
+            instructions.extend(instructions_children)
+        return instruction_count, instructions
 
     def cross_file_process(self, fileinfos):
         for fileinfo in fileinfos:
             for func in fileinfo.function_list:
-                func.instruction_count = self.get_children_instruction_count(func.conditional_info)
+                func.instruction_count, dummy = self.get_children_instruction_count(func.conditional_info)
             yield fileinfo
 
     @staticmethod
