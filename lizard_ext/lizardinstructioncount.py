@@ -313,6 +313,7 @@ class LizardExtension(ExtensionBase):  # pylint: disable=R0903
             dest="ISA",
             )
 
+#best or worst case?
 def operator_costs(instr):
     if instr == "++":
         return [Load(), Add(), Store()]
@@ -386,3 +387,80 @@ def operator_costs(instr):
         return [Jump()]
     if instr == 'while':
         return [Jump()]
+
+
+def operator_costs(instr):
+    if instr == "++":
+        return [Load(), Add(), Store()]
+    if instr == "--":
+        return [Load(), Sub(), Store()]
+    if instr == "!":
+        return [Load(), Cmp()]
+    if instr == "~":
+        return [Load(), Tilde()]
+    if instr == "=":
+        return [Store(), Load()]
+    if instr == "+":
+        return [Load(), Add(), Load()]
+    if instr == "-":
+        return [Load(), Sub(), Load()]
+    if instr == "*":
+        return [Load(), Mul(), Load()]
+    if instr == "/":
+        return [Load(), Div(), Load()]
+    if instr == "%":
+        return [Load(), Mod(), Load()]
+    if instr == "+=":
+        return [Store(), Load(), Add(), Load()]
+    if instr == "-=":
+        return [Store(), Load(), Sub(), Load()]
+    if instr == "*=":
+        return [Store(), Load(), Mul(), Load()]
+    if instr == "/=":
+        return [Store(), Load(), Div(), Load()]
+    if instr == "%=":
+        return [Store(), Load(), Mod(), Load()]
+    if instr == "&":
+        return [Load(), BitAnd(), Load()]
+    if instr == "^":
+        return [Load(), Exp(), Load()]
+    if instr == "|":
+        return [Load(), BitOr(), Load()]
+    if instr == "&=":
+        return [Store(), Load(), BitAnd(), Load()]
+    if instr == "^=":
+        return [Store(), Load(), Exp(), Load()]
+    if instr == "|=":
+        return [Store(), Load(), BitOr(), Load()]
+    if instr == "<<":
+        return [Load(), Shift(), Load()]
+    if instr == "<<=":
+        return [Store(), Load(), Shift(), Load()]
+    if instr == ">>":
+        return [Load(), Shift(), Load()]
+    if instr == ">>=":
+        return [Store(), Load(), Shift(), Load()]
+    if instr == "==":
+        return [Load(), Cmp(), Load()]
+    if instr == "!=":
+        return [Load(), Cmp(), Load()]
+    if instr == ">":
+        return [Load(), Cmp(), Load()]
+    if instr == "<":
+        return [Load(), Cmp(), Load()]
+    if instr == ">=":
+        return [Load(), Cmp(), Load()]
+    if instr == "<=":
+        return [Load(), Cmp(), Load()]
+    if instr == "&&":
+        return [Load(), Cmp(), Load(),Cmp()]
+    if instr == "||":
+        return [Load(), Cmp(), Load(),Cmp()]
+    if instr == 'for':
+        return [Load(), Cmp(), Jump()]
+    if instr == 'if':
+        return [Load(), Cmp(), Jump()]
+    if instr == 'while':
+        return [Load(), Cmp(), Jump()]
+    if instr == '[':
+        return [Load()]
