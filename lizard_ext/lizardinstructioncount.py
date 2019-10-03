@@ -124,7 +124,9 @@ class LizardExtension(ExtensionBase):  # pylint: disable=R0903
 
     conditional_ops = ['for', 'if', 'while']
 
-    ops = general_register_ops + state_registers_ops + conditional_ops
+    array_ops = ['[']
+
+    ops = general_register_ops + state_registers_ops + conditional_ops + array_ops
     ops_string = ''.join(ops)
 
     def __init__(self, context=None):
@@ -178,6 +180,12 @@ class LizardExtension(ExtensionBase):  # pylint: disable=R0903
         #self.context.current_function.instructions.extend(instrs)
         cost = len(instrs)
         self.current_condition.instruction_count+=cost
+
+        #ben added to include operators in conditional both in parent and child
+        pending = self.current_condition.children.pending_condition
+        if pending:
+            pending.instructions.extend(instrs)
+            pending.instruction_count+=cost
 
         if debug:
             self.total_instructions+=1
@@ -306,88 +314,12 @@ class LizardExtension(ExtensionBase):  # pylint: disable=R0903
     @staticmethod
     def set_args(parser):
         parser.add_argument(
-            "--ISA",
-            help='''Architecture ISA, default is BFIN.
+            "-u",
+            help='''User input for path tracing
             ''',
             type=str,
-            dest="ISA",
+            dest="u",
             )
-
-#best or worst case?
-def operator_costs(instr):
-    if instr == "++":
-        return [Load(), Add(), Store()]
-    if instr == "--":
-        return [Load(), Sub(), Store()]
-    if instr == "!":
-        return [Load(), Cmp()]
-    if instr == "~":
-        return [Load(), Tilde()]
-    if instr == "=":
-        return [Store(), Load()]
-    if instr == "+":
-        return [Load(), Add()]
-    if instr == "-":
-        return [Load(), Sub()]
-    if instr == "*":
-        return [Load(), Mul()]
-    if instr == "/":
-        return [Load(), Div()]
-    if instr == "%":
-        return [Load(), Mod()]
-    if instr == "+=":
-        return [Store(), Load(), Add()]
-    if instr == "-=":
-        return [Store(), Load(), Sub()]
-    if instr == "*=":
-        return [Store(), Load(), Mul()]
-    if instr == "/=":
-        return [Store(), Load(), Div()]
-    if instr == "%=":
-        return [Store(), Load(), Mod()]
-    if instr == "&":
-        return [Load(), BitAnd()]
-    if instr == "^":
-        return [Load(), Exp()]
-    if instr == "|":
-        return [Load(), BitOr()]
-    if instr == "&=":
-        return [Store(), Load(), BitAnd()]
-    if instr == "^=":
-        return [Store(), Load(), Exp()]
-    if instr == "|=":
-        return [Store(), Load(), BitOr()]
-    if instr == "<<":
-        return [Load(), Shift()]
-    if instr == "<<=":
-        return [Store(), Load(), Shift()]
-    if instr == ">>":
-        return [Load(), Shift()]
-    if instr == ">>=":
-        return [Store(), Load(), Shift()]
-    if instr == "==":
-        return [Load(), Cmp()]
-    if instr == "!=":
-        return [Load(), Cmp()]
-    if instr == ">":
-        return [Load(), Cmp()]
-    if instr == "<":
-        return [Load(), Cmp()]
-    if instr == ">=":
-        return [Load(), Cmp()]
-    if instr == "<=":
-        return [Load(), Cmp()]
-    if instr == "&&":
-        return [Load(), Cmp()]
-    if instr == "||":
-        return [Load(), Cmp()]
-    if instr == 'for':
-        return [Jump()]
-    if instr == 'if':
-        return [Jump()]
-    if instr == 'while':
-        return [Jump()]
-
 
 def operator_costs(instr):
     if instr == "++":
@@ -457,10 +389,10 @@ def operator_costs(instr):
     if instr == "||":
         return [Load(), Cmp(), Load(),Cmp()]
     if instr == 'for':
-        return [Load(), Cmp(), Jump()]
+        return [Jump()]
     if instr == 'if':
-        return [Load(), Cmp(), Jump()]
+        return [Jump()]
     if instr == 'while':
-        return [Load(), Cmp(), Jump()]
+        return [Jump()]
     if instr == '[':
         return [Load()]
